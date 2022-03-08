@@ -13,7 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
       User.belongsTo(models.Role, {
         as: 'role',
-        foreignKey: 'role_id;'
+        foreignKey: 'role_id'
       })
     }
   }
