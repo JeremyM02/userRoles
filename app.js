@@ -3,7 +3,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-
+const session = require('express-session');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 
@@ -18,7 +18,27 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(
+    session({
+      secret: 'keyboard dog',
+      resave: true,
+      saveUninitialized: false,
+      cookie: {
+        secure: false,
+        maxAge: 6*60*60*1000
+      }
+    })
+);
+const {passport} = require('./middleware/passport');
 
+app.use(passport.initialize());
+
+app.use(passport.authenticate('session'));
+
+app.use(function(req, res, next){
+  res.locals.user = req.user || null;
+  next();
+});
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
@@ -28,7 +48,7 @@ app.use(function(req, res, next) {
 });
 
 // error handler
-app.use(function(err, req, res, next) {
+app.use(function(err, req, res) {
   // set locals, only providing error in development
   res.locals.message = err.message;
   res.locals.error = req.app.get('env') === 'development' ? err : {};
